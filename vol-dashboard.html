@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SevaAI 2.0 | Volunteer Impact Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg: #f0fdf4;
+            --dark: #064e3b;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #d1fae5;
+            --high: #ef4444;
+            --mid: #f59e0b;
+            --gold: #facc15;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background: white; padding: 15px 6%; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 15px rgba(16,185,129,0.08); position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--dark); text-decoration: none; }
+        .logo span { color: var(--primary); }
+        
+        /* --- HEADER --- */
+        .impact-header {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: white; padding: 30px; border-radius: 20px; margin: 20px auto; max-width: 1100px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .stat-badge { background: rgba(255,255,255,0.15); padding: 15px 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-value { font-family: 'Syne', sans-serif; font-size: 1.8rem; display: block; }
+        .stat-label { font-size: 0.8rem; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr 360px; gap: 25px; }
+
+        /* --- TASKS --- */
+        .section-title { font-family: 'Syne', sans-serif; margin-bottom: 15px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .task-card {
+            background: white; border-radius: 18px; padding: 20px; margin-bottom: 15px;
+            border-left: 6px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; gap: 12px; transition: 0.3s;
+        }
+        .task-card.match { border-left-color: var(--primary); background: #f0fdf4; }
+        .task-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        
+        .badge-match { font-size: 0.65rem; background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+        .priority-tag { font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; }
+        .High { background: #fee2e2; color: var(--high); }
+        .Medium { background: #fef3c7; color: var(--mid); }
+        .Low { background: #dcfce7; color: var(--primary); }
+        
+        .task-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 15px; border-top: 1px solid #f1f5f9; }
+        
+        /* --- LEADERBOARD --- */
+        .leaderboard-box { background: white; border-radius: 18px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-top: 20px; }
+        .leader-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 10px; border-bottom: 1px solid #f1f5f9; }
+        .rank { font-weight: 800; width: 30px; color: var(--muted); }
+        .rank-1 { color: var(--gold); }
+        .user-info { flex: 1; margin-left: 10px; }
+        .user-name { font-weight: 700; font-size: 0.95rem; }
+        .user-xp { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+
+        /* --- BUTTONS --- */
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; font-family: inherit; }
+        .btn-action:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid #cbd5e1; color: var(--text); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+
+        #miniMap { height: 250px; width: 100%; border-radius: 18px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .proof-box { background: white; padding: 20px; border-radius: 18px; border: 2px dashed var(--primary); text-align: center; margin-bottom: 20px; }
+        .empty-state { text-align: center; padding: 40px; color: var(--muted); background: white; border-radius: 18px; border: 1px dashed #cbd5e1; grid-column: span 1; }
+
+        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="logo">Seva<span>AI</span> 2.0</a>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div id="userRank" style="font-size: 0.85rem; color: var(--primary); font-weight: 700;">Rank: Loading...</div>
+            <button onclick="logout()" style="background:none; border:none; color:var(--high); cursor:pointer; font-weight:600;">Logout 🚪</button>
+        </div>
+    </nav>
+
+    <div class="impact-header">
+        <div>
+            <h1 id="welcomeText" style="font-family: 'Syne';">Welcome Hero!</h1>
+            <p id="taskStatus">Scanning for emergencies near your location...</p>
+        </div>
+        <div style="display: flex; gap: 15px;">
+            <div class="stat-badge">
+                <span class="stat-value" id="xpPoints">0</span>
+                <span class="stat-label">Total XP</span>
+            </div>
+            <div class="stat-badge">
+                <span class="stat-value" id="livesSaved">0</span>
+                <span class="stat-label">Tasks Done</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <main>
+            <h2 class="section-title">🚨 Smart Recommendations</h2>
+            <div id="taskList">
+                <div class="empty-state">Fetching real-time tasks...</div>
+            </div>
+        </main>
+
+        <aside>
+            <div id="miniMap"></div>
+
+            <div class="proof-box">
+                <h3 style="font-size: 1rem; margin-bottom: 5px;">Verify Task Impact</h3>
+                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 12px;">AI processes your photo to award 500 XP.</p>
+                <button class="btn-action" style="width: 100%;" onclick="triggerProofUpload()">Submit Proof 📸</button>
+                <input type="file" id="proofInput" style="display:none" accept="image/*" onchange="verifyImpact(event)">
+            </div>
+
+            <div class="leaderboard-box">
+                <h2 class="section-title" style="font-size: 1.1rem; margin-bottom: 10px;">🏆 Top Heroes</h2>
+                <div id="leaderboardList">
+                    <div style="padding:10px; color:var(--muted); font-size:0.8rem;">Loading leaderboard...</div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        let map;
+        const currentUser = JSON.parse(localStorage.getItem('userData')) || { name: 'Hero', email: '', xp: 0, impact: 0, skills: '' };
+
+        async function init() {
+            // 1. Fetch Mapbox Token Securely
+            try {
+                const configRes = await fetch('/api/config');
+                const config = await configRes.json();
+                mapboxgl.accessToken = config.mapboxToken;
+
+                map = new mapboxgl.Map({
+                    container: 'miniMap',
+                    style: 'mapbox://styles/mapbox/light-v11',
+                    center: [77.2090, 28.6139],
+                    zoom: 10
+                });
+
+                document.getElementById('welcomeText').innerText = `Welcome, ${currentUser.name}!`;
+                document.getElementById('xpPoints').innerText = currentUser.xp || 0;
+                document.getElementById('livesSaved').innerText = currentUser.impact || 0;
+                updateRankLabel(currentUser.xp || 0);
+                
+                loadLeaderboard();
+                loadRecommendedTasks();
+            } catch (err) {
+                console.error("Initialization failed:", err);
+            }
+        }
+
+        async function loadRecommendedTasks() {
+            const list = document.getElementById('taskList');
+            try {
+                const res = await fetch('/api/needs');
+                const tasks = await res.json();
+                
+                if(!tasks || tasks.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No active emergencies. You\'re all caught up!</div>';
+                    return;
+                }
+
+                // Smart Skill Filtering
+                const userSkills = (currentUser.skills || "").toLowerCase();
+                
+                list.innerHTML = tasks.map(task => {
+                    const isMatch = userSkills && task.requirement.toLowerCase().includes(userSkills);
+                    const xpAmount = (task.priority === 'High' ? 1000 : 500);
+                    
+                    // Mapbox Marker
+                    new mapboxgl.Marker({ color: task.priority === 'High' ? '#ef4444' : '#10b981' })
+                        .setLngLat([task.coordinates.lng, task.coordinates.lat])
+                        .setPopup(new mapboxgl.Popup().setHTML(`<b>${task.title}</b>`))
+                        .addTo(map);
+
+                    return `
+                        <div class="task-card ${isMatch ? 'match' : ''}">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>
+                                    <span class="priority-tag ${task.priority}">${task.priority} Priority</span>
+                                    ${isMatch ? '<span class="badge-match">Skill Match</span>' : ''}
+                                    <h3 style="margin-top: 8px;">${task.title}</h3>
+                                    <p style="font-size: 0.9rem; color: #4b5563; margin-top: 5px;">${task.requirement}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 0.9rem; color: var(--primary); font-weight: 800;">+${xpAmount} XP</span>
+                                </div>
+                            </div>
+                            <div class="task-footer">
+                                <span style="font-size: 0.85rem; color: var(--muted);">📍 ${task.locationName || 'Nearby Area'}</span>
+                                <div style="display: flex; gap: 10px;">
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${task.coordinates.lat},${task.coordinates.lng}" 
+                                       target="_blank" class="btn-outline">🧭 Navigate</a>
+                                    <button class="btn-action" onclick="assignTask('${task._id}', this)">Accept</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                list.innerHTML = '<div class="empty-state">Unable to load tasks. Check server connection.</div>';
+            }
+        }
+
+        async function loadLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            try {
+                const res = await fetch('/api/leaderboard');
+                const leaders = await res.json();
+                
+                list.innerHTML = leaders.slice(0, 5).map((l, index) => {
+                    const isMe = l.email === currentUser.email;
+                    return `
+                        <div class="leader-item" style="${isMe ? 'background:rgba(16,185,129,0.05); border-radius:8px;' : ''}">
+                            <span class="rank ${index === 0 ? 'rank-1' : ''}">${index === 0 ? '🥇' : index + 1}</span>
+                            <div class="user-info">
+                                <div class="user-name">${isMe ? 'You (Hero)' : l.name}</div>
+                                <div class="user-xp">${(l.xp || 0).toLocaleString()} XP</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                list.innerHTML = '<div style="padding:10px; color:var(--muted); font-size:0.8rem;">Offline</div>';
+            }
+        }
+
+        function assignTask(id, btn) {
+            btn.innerHTML = "Assigned ✅";
+            btn.style.background = "#0f172a";
+            btn.disabled = true;
+            alert("Task assigned! Use the 'Navigate' button to find the route.");
+        }
+
+        function triggerProofUpload() { document.getElementById('proofInput').click(); }
+
+        async function verifyImpact(event) {
+            if (!event.target.files[0]) return;
+            
+            const xpDisplay = document.getElementById('xpPoints');
+            const oldXP = xpDisplay.innerText;
+            xpDisplay.innerText = "⏳ Processing...";
+            
+            try {
+                // In a real app, you'd upload the file via FormData
+                const res = await fetch('/api/verify-impact', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: currentUser.email, xpToAdd: 500 })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    currentUser.xp = data.newXP;
+                    currentUser.impact = (currentUser.impact || 0) + 1;
+                    localStorage.setItem('userData', JSON.stringify(currentUser));
+                    
+                    xpDisplay.innerText = data.newXP;
+                    document.getElementById('livesSaved').innerText = currentUser.impact;
+                    updateRankLabel(data.newXP);
+                    loadLeaderboard();
+                    alert("AI Verified! Your contribution has been recorded. +500 XP");
+                }
+            } catch (err) {
+                xpDisplay.innerText = oldXP;
+                alert("Verification failed. Check your connection.");
+            }
+        }
+
+        function updateRankLabel(xp) {
+            const rankLabel = document.getElementById('userRank');
+            if(xp > 10000) rankLabel.innerText = "Rank: Legendary Guardian";
+            else if(xp > 5000) rankLabel.innerText = "Rank: Elite Protector";
+            else if(xp > 1000) rankLabel.innerText = "Rank: Trusted Helper";
+            else rankLabel.innerText = "Rank: Active Volunteer";
+        }
+
+        function logout() {
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.removeItem('userData');
+                window.location.href = '/';
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

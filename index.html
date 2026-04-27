@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SevaAI 2.0 | Smart Resource Allocation</title>
+    
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --primary-green: #10b981;
+            --dark-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --text-main: #334155;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 10%;
+            background: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--dark-bg);
+            text-decoration: none;
+        }
+
+        .logo span { color: var(--primary-blue); }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--primary-blue); }
+
+        /* Hero Section */
+        .hero {
+            padding: 6rem 10%;
+            text-align: center;
+            background: linear-gradient(135deg, #eff6ff 0%, #ecfdf5 100%);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            color: var(--dark-bg);
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 span { color: var(--primary-blue); }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            color: #64748b;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-ngo { background: var(--primary-blue); color: white; }
+        .btn-vol { background: var(--primary-green); color: white; }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Features Section */
+        .section-padding { padding: 5rem 10%; }
+        .section-title { text-align: center; margin-bottom: 3.5rem; }
+        .section-title h2 { font-size: 2.2rem; color: var(--dark-bg); }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--primary-blue);
+            transition: 0.3s;
+        }
+
+        .feature-card:hover { transform: translateY(-5px); }
+
+        /* Dual Track Workflow */
+        .workflow-split {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .track {
+            flex: 1;
+            min-width: 350px;
+            padding: 4rem;
+            color: white;
+        }
+
+        .ngo-track { background: var(--primary-blue); }
+        .vol-track { background: var(--primary-green); }
+
+        .track h3 { font-size: 2rem; margin-bottom: 2rem; }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .step-num {
+            background: white;
+            color: var(--dark-bg);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            text-align: center;
+            padding: 3rem 10%;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            .track { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#" class="logo">Seva<span>AI</span> 2.0</a>
+        <ul class="nav-links">
+            <li><a href="#engine">AI Core Engine</a></li>
+            <li><a href="#workflow">Workflows</a></li>
+            <li><a href="login.html" style="color: var(--primary-blue);">Login</a></li>
+            <li><a href="#" class="btn btn-ngo" style="padding: 0.6rem 1.5rem;">Join Now</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <h1>Smart Resource Allocation for <span>Social Impact</span></h1>
+        <p>A powerful AI system that gathers scattered community data to match volunteers with urgent local needs in real-time.</p>
+        <div class="btn-group">
+           <button class="btn btn-ngo" onclick="window.location.href='register.html'">Register as NGO</button>
+    <button class="btn btn-vol" onclick="window.location.href='register.html'">Become a Volunteer</button>
+        </div>
+    </section>
+
+    <section id="engine" class="section-padding">
+        <div class="section-title">
+            <h2>AI Core Engine (SevaAI Intelligence)</h2>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Multi-Source Input</h3>
+                <p>Ingests data from NGO forms, user requests, and social media to identify community gaps.</p>
+            </div>
+            <div class="feature-card">
+                <h3>NLP Processing</h3>
+                <p>Natural Language Processing extracts locations, categories, and assigns urgency scores automatically.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Smart Matching</h3>
+                <p>Algorithms analyze distance, skill sets, and availability to find the best volunteer for every task.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="workflow" class="section-padding" style="background: #fff;">
+        <div class="section-title">
+            <h2>Streamlined Coordination</h2>
+        </div>
+        <div class="workflow-split">
+            <div class="track ngo-track">
+                <h3>NGO Panel</h3>
+                <div class="step"><div class="step-num">1</div> Create Need Request</div>
+                <div class="step"><div class="step-num">2</div> Automated AI Need Analysis</div>
+                <div class="step"><div class="step-num">3</div> High/Medium/Low Priority Dashboard</div>
+                <div class="step"><div class="step-num">4</div> Live Resource Tracking & Maps</div>
+            </div>
+            <div class="track vol-track">
+                <h3>Volunteer Panel</h3>
+                <div class="step"><div class="step-num">1</div> Smart Skill-Based Recommendations</div>
+                <div class="step"><div class="step-num">2</div> Instant Task Assignment</div>
+                <div class="step"><div class="step-num">3</div> Integrated Google Maps Navigation</div>
+                <div class="step"><div class="step-num">4</div> Gamified Impact Proof Submission</div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 SevaAI 2.0. All Rights Reserved. Empowering communities through intelligence.</p>
+    </footer>
+
+    <script>
+        // Simple Interaction for buttons
+        function alertUser(type) {
+            if(type === 'NGO') {
+                alert("Redirecting to NGO Onboarding... SevaAI is preparing your priority dashboard.");
+            } else {
+                alert("Fetching nearby tasks... Your skills are being matched by SevaAI Intelligence.");
+            }
+        }
+
+        // Smooth Scrolling for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Scroll reveal animation effect
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach(card => {
+                const cardTop = card.getBoundingClientRect().top;
+                if(cardTop < window.innerHeight - 100) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // Initialize state for animation
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.style.opacity = '0.9';
+            card.style.transition = 'all 0.6s ease-out';
+        });
+    </script>
+</body>
+</html>

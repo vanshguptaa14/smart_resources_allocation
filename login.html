@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SevaAI 2.0 | Login</title>
+    <style>
+        :root {
+            --ngo-blue: #2563eb;
+            --vol-green: #10b981;
+            --bg: #f1f5f9;
+            --primary-blue: #2563eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            border-top: 8px solid var(--ngo-blue);
+            transition: 0.3s;
+        }
+
+        .auth-card.volunteer-mode { border-top-color: var(--vol-green); }
+
+        h2 { text-align: center; margin-bottom: 0.5rem; color: #1e293b; }
+        p.subtitle { text-align: center; color: #64748b; margin-bottom: 1.5rem; font-size: 0.9rem; }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--ngo-blue); transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--vol-green); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        input {
+            width: 100%; padding: 12px; border: 1px solid #cbd5e1;
+            border-radius: 8px; box-sizing: border-box; outline: none;
+        }
+        input:focus { border-color: var(--ngo-blue); }
+
+        .btn-submit {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            color: white; font-weight: bold; cursor: pointer; font-size: 1rem;
+            background-color: var(--ngo-blue); transition: 0.3s;
+        }
+
+        .volunteer-mode .btn-submit { background-color: var(--vol-green); }
+        .footer-text { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; }
+        .footer-text a { color: var(--primary-blue); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="auth-card" id="card">
+    <h2 id="login-title">NGO Login</h2>
+    <p class="subtitle">Welcome back to SevaAI 2.0</p>
+    
+    <div class="toggle-container">
+        <span>NGO</span>
+        <label class="switch">
+            <input type="checkbox" id="role-toggle">
+            <span class="slider"></span>
+        </label>
+        <span>Volunteer</span>
+    </div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="name@organization.org" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Sign In</button>
+    </form>
+
+    <div class="footer-text">
+        Don't have an account? <a href="register.html">Register here</a>
+    </div>
+</div>
+
+<script>
+    const toggle = document.getElementById('role-toggle');
+    const card = document.getElementById('card');
+    const title = document.getElementById('login-title');
+
+    // UI Toggle Logic
+    toggle.addEventListener('change', () => {
+        const isVol = toggle.checked;
+        card.classList.toggle('volunteer-mode', isVol);
+        title.innerText = isVol ? "Volunteer Login" : "NGO Login";
+    });
+
+    // Form Submission & Dashboard Redirection
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = e.target.querySelector('.btn-submit');
+        const originalBtnText = submitBtn.innerText;
+        
+        submitBtn.innerText = "Authenticating...";
+        submitBtn.disabled = true;
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Determine the role based on the toggle
+        const selectedRole = toggle.checked ? 'volunteer' : 'ngo';
+        data.role = selectedRole;
+
+        try {
+            const response = await fetch('http://localhost:5000/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("Login Successful!");
+                
+                // --- ROLE-BASED REDIRECTION ---
+                if (selectedRole === 'ngo') {
+                    window.location.href = 'ngo-dashboard.html';
+                } else {
+                    window.location.href = 'vol-dashboard.html';
+                }
+            } else {
+                alert(result.message || "Invalid Credentials");
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        } catch (err) {
+            alert("Error: SevaAI server is not responding. Please run server.js");
+            submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SevaAI 2.0 | Registration</title>
+    <style>
+        :root {
+            --ngo-blue: #2563eb;
+            --vol-green: #10b981;
+            --bg: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            transition: border-top 0.3s ease;
+            border-top: 8px solid var(--ngo-blue);
+        }
+
+        .auth-card.volunteer-mode { border-top-color: var(--vol-green); }
+
+        h2 { text-align: center; margin-bottom: 1.5rem; color: #1e293b; }
+
+        /* Toggle Switch Styling */
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--ngo-blue);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--vol-green); }
+        input:checked + .slider:before { transform: translateX(30px); }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            background-color: var(--ngo-blue);
+            margin-top: 10px;
+        }
+
+        .volunteer-mode .btn-submit { background-color: var(--vol-green); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="auth-card" id="card">
+    <h2 id="form-title">NGO Registration</h2>
+    
+    <div class="toggle-container">
+        <span>NGO</span>
+        <label class="switch">
+            <input type="checkbox" id="role-toggle">
+            <span class="slider"></span>
+        </label>
+        <span>Volunteer</span>
+    </div>
+
+    <form id="registrationForm">
+        <div class="form-group">
+            <label>Full Name / Org Name</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" required>
+        </div>
+
+        <div id="ngo-fields">
+            <div class="form-group">
+                <label>Registration ID</label>
+                <input type="text" name="regId">
+            </div>
+        </div>
+
+        <div id="vol-fields" class="hidden">
+            <div class="form-group">
+                <label>Skills (e.g. Medical, Teaching)</label>
+                <input type="text" name="skills">
+            </div>
+            <div class="form-group">
+                <label>Radius of Availability (km)</label>
+                <input type="number" name="radius">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Create Account</button>
+    </form>
+</div>
+
+<script>
+   const toggle = document.getElementById('role-toggle');
+const card = document.getElementById('card');
+const title = document.getElementById('form-title');
+const ngoFields = document.getElementById('ngo-fields');
+const volFields = document.getElementById('vol-fields');
+const registrationForm = document.getElementById('registrationForm');
+
+// 1. Unified Toggle Logic
+toggle.addEventListener('change', () => {
+    const isVolunteer = toggle.checked;
+
+    // Toggle CSS classes for colors and visibility
+    card.classList.toggle('volunteer-mode', isVolunteer);
+    ngoFields.classList.toggle('hidden', isVolunteer);
+    volFields.classList.toggle('hidden', !isVolunteer);
+    
+    // Update Text
+    title.innerText = isVolunteer ? "Volunteer Registration" : "NGO Registration";
+});
+
+// 2. Form Submission with Redirect
+registrationForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Visual Feedback: Disable button during request
+    const submitBtn = registrationForm.querySelector('.btn-submit');
+    const originalBtnText = submitBtn.innerText;
+    submitBtn.innerText = "Registering...";
+    submitBtn.disabled = true;
+
+    // Prepare Data
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    data.role = toggle.checked ? 'volunteer' : 'ngo';
+
+    try {
+        const response = await fetch('http://localhost:5000/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Success! Show message and redirect
+            alert("Registration successful! Redirecting to home...");
+            window.location.href = 'index.html'; 
+        } else {
+            // Handle server-side validation errors (e.g., email exists)
+            alert("Registration failed: " + (result.message || "Unknown error"));
+            resetButton(submitBtn, originalBtnText);
+        }
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("Could not connect to the SevaAI server. Please ensure Node.js is running.");
+        resetButton(submitBtn, originalBtnText);
+    }
+});
+
+// Helper to reset button state
+function resetButton(btn, text) {
+    btn.innerText = text;
+    btn.disabled = false;
+}
+</script>
+
+</body>
+</html>
