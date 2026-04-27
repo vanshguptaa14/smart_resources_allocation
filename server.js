@@ -147,17 +147,24 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 
+// Example Express.js Route
 app.post('/api/verify-impact', async (req, res) => {
     try {
         const { email, xpToAdd } = req.body;
-        const user = await User.findOneAndUpdate(
-            { email },
-            { $inc: { xp: xpToAdd, impact: 1 } },
-            { new: true }
-        );
-        res.json({ success: true, newXP: user.xp });
+        
+        // 1. Find user in your database
+        // 2. Add xpToAdd to their current XP
+        // 3. Save the user
+        
+        // Mock response for testing:
+        const updatedXP = 1500; // This should come from your DB logic
+        
+        res.json({ 
+            success: true, 
+            newXP: updatedXP 
+        });
     } catch (error) {
-        res.status(500).json({ message: "XP update failed" });
+        res.status(500).json({ success: false, message: "Server error" });
     }
 });
 

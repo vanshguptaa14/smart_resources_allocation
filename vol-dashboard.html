@@ -256,37 +256,68 @@
         function triggerProofUpload() { document.getElementById('proofInput').click(); }
 
         async function verifyImpact(event) {
-            if (!event.target.files[0]) return;
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // --- 1. IMMEDIATE (OPTIMISTIC) UPDATE ---
+    const xpDisplay = document.getElementById('xpPoints');
+    const impactDisplay = document.getElementById('livesSaved');
+    
+    // Calculate new values locally
+    const currentXP = parseInt(currentUser.xp || 0);
+    const currentImpact = parseInt(currentUser.impact || 0);
+    const addedXP = 500;
+    const addedImpact = 1;
+
+    // Update the UI immediately
+    xpDisplay.innerText = currentXP + addedXP;
+    impactDisplay.innerText = currentImpact + addedImpact;
+    
+    // Update local variable and rank immediately
+    currentUser.xp = currentXP + addedXP;
+    currentUser.impact = currentImpact + addedImpact;
+    updateRankLabel(currentUser.xp);
+
+    // --- 2. BACKGROUND SERVER SYNC ---
+    try {
+        const res = await fetch('/api/verify-impact', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                email: currentUser.email, 
+                xpToAdd: addedXP 
+            })
+        });
+        
+        const data = await res.json();
+        
+        if(data.success) {
+            // Update local storage with the final server-confirmed XP
+            currentUser.xp = data.newXP; 
+            localStorage.setItem('userData', JSON.stringify(currentUser));
             
-            const xpDisplay = document.getElementById('xpPoints');
-            const oldXP = xpDisplay.innerText;
-            xpDisplay.innerText = "⏳ Processing...";
+            // Refresh leaderboard to show the new standing
+            loadLeaderboard();
             
-            try {
-                // In a real app, you'd upload the file via FormData
-                const res = await fetch('/api/verify-impact', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: currentUser.email, xpToAdd: 500 })
-                });
-                const data = await res.json();
-                
-                if(data.success) {
-                    currentUser.xp = data.newXP;
-                    currentUser.impact = (currentUser.impact || 0) + 1;
-                    localStorage.setItem('userData', JSON.stringify(currentUser));
-                    
-                    xpDisplay.innerText = data.newXP;
-                    document.getElementById('livesSaved').innerText = currentUser.impact;
-                    updateRankLabel(data.newXP);
-                    loadLeaderboard();
-                    alert("AI Verified! Your contribution has been recorded. +500 XP");
-                }
-            } catch (err) {
-                xpDisplay.innerText = oldXP;
-                alert("Verification failed. Check your connection.");
-            }
+            alert("AI Verified! Your contribution has been recorded. +500 XP");
+        } else {
+            throw new Error("Verification failed");
         }
+    } catch (err) {
+        // --- 3. ROLLBACK ON FAILURE ---
+        // If the server fails, revert the UI so the user isn't misled
+        currentUser.xp = currentXP;
+        currentUser.impact = currentImpact;
+        xpDisplay.innerText = currentXP;
+        impactDisplay.innerText = currentImpact;
+        updateRankLabel(currentXP);
+        
+        alert("Verification failed. Please check your connection and try again.");
+    } finally {
+        // Clear the input so the same file can be uploaded again if needed
+        event.target.value = "";
+    }
+}
 
         function updateRankLabel(xp) {
             const rankLabel = document.getElementById('userRank');
